@@ -69,29 +69,52 @@ def retrain_model(train_dir, epochs=15, batch_size=16, fine_tune=True):
     """
     Retrains the model from a directory of newly uploaded, labeled images.
     Expects `train_dir` to contain one subfolder per class, matching class_names.
+    Handles small datasets gracefully by skipping validation split when there's
+    not enough data to support one.
     """
-    train_ds = tf.keras.utils.image_dataset_from_directory(
-        train_dir,
-        image_size=IMG_SIZE,
-        batch_size=batch_size,
-        label_mode="categorical",
-        validation_split=0.15,
-        subset="training",
-        shuffle=True,
-        seed=42
+    # Count total images to decide whether a validation split is feasible
+    total_images = sum(
+        len(files) for _, _, files in os.walk(train_dir)
+        if files
     )
-    val_ds = tf.keras.utils.image_dataset_from_directory(
-        train_dir,
-        image_size=IMG_SIZE,
-        batch_size=batch_size,
-        label_mode="categorical",
-        validation_split=0.15,
-        subset="validation",
-        shuffle=True,
-        seed=42
-    )
+    # Need enough images that a 15% validation split yields at least 1 image per likely class
+    use_validation = total_images >= 20
 
-    class_names = train_ds.class_names
+    if use_validation:
+        train_ds = tf.keras.utils.image_dataset_from_directory(
+            train_dir,
+            image_size=IMG_SIZE,
+            batch_size=batch_size,
+            label_mode="categorical",
+            validation_split=0.15,
+            subset="training",
+            shuffle=True,
+            seed=42
+        )
+        val_ds = tf.keras.utils.image_dataset_from_directory(
+            train_dir,
+            image_size=IMG_SIZE,
+            batch_size=batch_size,
+            label_mode="categorical",
+            validation_split=0.15,
+            subset="validation",
+            shuffle=True,
+            seed=42
+        )
+        class_names = train_ds.class_names
+        monitor_metric = "val_loss"
+    else:
+        train_ds = tf.keras.utils.image_dataset_from_directory(
+            train_dir,
+            image_size=IMG_SIZE,
+            batch_size=batch_size,
+            label_mode="categorical",
+            shuffle=True,
+            seed=42
+        )
+        val_ds = None
+        class_names = train_ds.class_names
+        monitor_metric = "loss"
 
     normalization_layer = tf.keras.layers.Rescaling(1./255)
     data_augmentation = tf.keras.Sequential([
@@ -108,16 +131,21 @@ def retrain_model(train_dir, epochs=15, batch_size=16, fine_tune=True):
         return ds.prefetch(buffer_size=tf.data.AUTOTUNE)
 
     train_ds = prepare(train_ds, augment=True)
-    val_ds = prepare(val_ds, augment=False)
+    if val_ds is not None:
+        val_ds = prepare(val_ds, augment=False)
 
     model = build_model(num_classes=len(class_names), fine_tune=fine_tune)
 
     callbacks = [
-        tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=5, restore_best_weights=True),
-        tf.keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=3, min_lr=1e-7),
+        tf.keras.callbacks.EarlyStopping(monitor=monitor_metric, patience=5, restore_best_weights=True),
+        tf.keras.callbacks.ReduceLROnPlateau(monitor=monitor_metric, factor=0.5, patience=3, min_lr=1e-7),
     ]
 
-    history = model.fit(train_ds, validation_data=val_ds, epochs=epochs, callbacks=callbacks)
+    fit_kwargs = {"epochs": epochs, "callbacks": callbacks}
+    if val_ds is not None:
+        fit_kwargs["validation_data"] = val_ds
+
+    history = model.fit(train_ds, **fit_kwargs)
 
     save_model(model, class_names)
 

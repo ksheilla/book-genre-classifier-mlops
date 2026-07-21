@@ -101,10 +101,6 @@ async def upload_retrain_data(category: str, files: list[UploadFile] = File(...)
 
 @app.post("/retrain")
 def trigger_retrain(epochs: int = 10):
-    """
-    Triggers retraining using all images currently in the upload directory.
-    Overwrites the saved model with the newly retrained version.
-    """
     if not os.path.exists(UPLOAD_DIR) or not os.listdir(UPLOAD_DIR):
         raise HTTPException(status_code=400, detail="No retraining data uploaded yet")
 
@@ -117,7 +113,7 @@ def trigger_retrain(epochs: int = 10):
             "message": "Retraining complete, model updated",
             "epochs_run": len(history.history["accuracy"]),
             "final_train_accuracy": round(final_accuracy, 4),
-            "final_val_accuracy": round(final_val_accuracy, 4) if final_val_accuracy else None
+            "final_val_accuracy": round(final_val_accuracy, 4) if final_val_accuracy is not None else "N/A (dataset too small for validation split)"
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Retraining failed: {str(e)}")
