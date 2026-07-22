@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book Genre Classifier — Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-1: #171029;
+    --bg-2: #241a3d;
+    --glass: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.09);
+    --glass-highlight: rgba(255, 255, 255, 0.12);
+    --text: #ece7f5;
+    --muted: #a89bc4;
+    --accent: #e8a86c;
+    --accent-dim: rgba(232, 168, 108, 0.35);
+    --success: #7fd1a3;
+    --danger: #e88585;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(circle at 15% 10%, rgba(232,168,108,0.08), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(140,110,220,0.12), transparent 45%),
+      linear-gradient(160deg, var(--bg-1), var(--bg-2));
+    background-attachment: fixed;
+    padding: 48px 24px 80px;
+  }
+
+  .container { max-width: 960px; margin: 0 auto; }
+
+  .hero { margin-bottom: 40px; }
+  .eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 2.4rem;
+    font-weight: 600;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  .subtitle { color: var(--muted); font-size: 1rem; max-width: 520px; line-height: 1.5; }
+
+  .card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 18px;
+    padding: 28px;
+    margin-bottom: 22px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 var(--glass-highlight);
+  }
+
+  .card h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.15rem;
+    margin: 0 0 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .status-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); box-shadow: 0 0 0 4px rgba(255,255,255,0.04); }
+  .dot.healthy { background: var(--success); box-shadow: 0 0 10px var(--success), 0 0 0 4px rgba(127,209,163,0.15); }
+  .dot.down { background: var(--danger); box-shadow: 0 0 10px var(--danger), 0 0 0 4px rgba(232,133,133,0.15); }
+  .status-detail { color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
+
+  button {
+    background: linear-gradient(135deg, var(--accent), #d9895a);
+    color: #201230;
+    border: none;
+    padding: 11px 20px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 4px 14px var(--accent-dim);
+  }
+  button:hover { transform: translateY(-1px); box-shadow: 0 6px 18px var(--accent-dim); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  input[type="file"], input[type="text"] {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--glass-border);
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 8px;
+    width: 100%;
+    margin-bottom: 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+  }
+  input[type="text"]:focus, input[type="file"]:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .result-box {
+    background: rgba(0,0,0,0.22);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 18px;
+    margin-top: 16px;
+    display: none;
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .prob-row { display: flex; justify-content: space-between; padding: 5px 0 2px; font-size: 0.88rem; color: var(--muted); }
+  .prob-bar-bg { background: rgba(255,255,255,0.06); border-radius: 4px; height: 6px; margin-bottom: 10px; overflow: hidden; }
+  .prob-bar-fill {
+    background: linear-gradient(90deg, var(--accent), #f0c088);
+    height: 6px;
+    border-radius: 4px;
+    box-shadow: 0 0 8px var(--accent-dim);
+    transition: width 0.4s ease;
+  }
+  .predicted {
+    font-family: 'Fraunces', serif;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+
+  canvas { max-height: 240px; }
+
+  label { display: block; margin-bottom: 6px; font-size: 0.8rem; color: var(--muted); }
+  .row { display: flex; gap: 12px; }
+  .row > div { flex: 1; }
+  hr { border: none; border-top: 1px solid var(--glass-border); margin: 22px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="hero">
+    <div class="eyebrow">MLOps Dashboard</div>
+    <h1>Book Genre Classifier</h1>
+    <p class="subtitle">A cover-to-shelf pipeline upload a book cover, get its genre, and keep the model learning from new titles.</p>
+  </div>
+
+  <div class="card">
+    <h2>API Endpoint</h2>
+    <input type="text" id="apiUrl" value="https://book-genre-classifier-api.onrender.com" />
+  </div>
+
+  <div class="card">
+    <h2>Model Status</h2>
+    <div class="status-row">
+      <div class="dot" id="statusDot"></div>
+      <span id="statusText">Checking...</span>
+    </div>
+    <div class="status-detail" id="statusDetail"></div>
+  </div>
+
+  <div class="card">
+    <h2>Dataset Class Distribution</h2>
+    <canvas id="classChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h2>Predict a Book Cover</h2>
+    <label>Upload a book cover image</label>
+    <input type="file" id="predictFile" accept="image/*" />
+    <button onclick="predictImage()">Predict genre</button>
+    <div class="result-box" id="predictResult"></div>
+  </div>
+
+  <div class="card">
+    <h2>Upload data &amp; retrain</h2>
+    <div class="row">
+      <div>
+        <label>Genre category for these images</label>
+        <input type="text" id="retrainCategory" placeholder="e.g. Childrens" />
+      </div>
+    </div>
+    <label>Upload multiple images for this category</label>
+    <input type="file" id="retrainFiles" accept="image/*" multiple />
+    <button onclick="uploadRetrainData()">Upload images</button>
+    <div class="result-box" id="uploadResult"></div>
+
+    <hr>
+
+    <p class="status-detail">Once you've uploaded images for one or more categories, trigger retraining below.</p>
+    <button onclick="triggerRetrain()">Trigger retraining</button>
+    <div class="result-box" id="retrainResult"></div>
+  </div>
+
+</div>
+
+<script>
+function getApiUrl() {
+  return document.getElementById("apiUrl").value.replace(/\/$/, "");
+}
+
+async function checkHealth() {
+  const dot = document.getElementById("statusDot");
+  const text = document.getElementById("statusText");
+  const detail = document.getElementById("statusDetail");
+  try {
+    const res = await fetch(`${getApiUrl()}/health`);
+    const data = await res.json();
+    if (data.model_loaded) {
+      dot.className = "dot healthy";
+      text.textContent = "Healthy";
+      detail.textContent = `Uptime: ${Math.round(data.uptime_seconds)}s • Classes: ${data.classes.join(", ")}`;
+    } else {
+      dot.className = "dot down";
+      text.textContent = "Model not loaded";
+    }
+  } catch (e) {
+    dot.className = "dot down";
+    text.textContent = "Unreachable";
+    detail.textContent = "Could not reach the API — Render's free tier sleeps after inactivity, try again in ~30s.";
+  }
+}
+checkHealth();
+setInterval(checkHealth, 15000);
+
+new Chart(document.getElementById("classChart"), {
+  type: "bar",
+  data: {
+    labels: ["Childrens", "Comics/Graphic Novels", "Mystery/Thriller", "Sci-Fi/Fantasy", "Teen/Young Adult"],
+    datasets: [{
+      label: "Training images",
+      data: [130, 130, 130, 130, 130],
+      backgroundColor: "rgba(232, 168, 108, 0.75)",
+      borderRadius: 6,
+      borderSkipped: false
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: "#a89bc4", font: { family: "Inter" } }, grid: { display: false } },
+      y: { ticks: { color: "#a89bc4", font: { family: "Inter" } }, grid: { color: "rgba(255,255,255,0.06)" } }
+    }
+  }
+});
+
+async function predictImage() {
+  const fileInput = document.getElementById("predictFile");
+  const resultBox = document.getElementById("predictResult");
+  if (!fileInput.files.length) return alert("Choose an image first");
+
+  const formData = new FormData();
+  formData.append("file", fileInput.files[0]);
+
+  resultBox.style.display = "block";
+  resultBox.innerHTML = "Predicting...";
+
+  try {
+    const res = await fetch(`${getApiUrl()}/predict`, { method: "POST", body: formData });
+    const data = await res.json();
+
+    let html = `<div class="predicted">${data.predicted_class} — ${(data.confidence * 100).toFixed(1)}%</div><br>`;
+    for (const [cls, prob] of Object.entries(data.all_probabilities)) {
+      html += `
+        <div class="prob-row"><span>${cls}</span><span>${(prob * 100).toFixed(1)}%</span></div>
+        <div class="prob-bar-bg"><div class="prob-bar-fill" style="width:${prob * 100}%"></div></div>
+      `;
+    }
+    resultBox.innerHTML = html;
+  } catch (e) {
+    resultBox.innerHTML = "Prediction failed — check the API URL and try again.";
+  }
+}
+
+async function uploadRetrainData() {
+  const category = document.getElementById("retrainCategory").value.trim();
+  const files = document.getElementById("retrainFiles").files;
+  const resultBox = document.getElementById("uploadResult");
+
+  if (!category) return alert("Enter a category name");
+  if (!files.length) return alert("Choose one or more images");
+
+  const formData = new FormData();
+  for (const file of files) formData.append("files", file);
+
+  resultBox.style.display = "block";
+  resultBox.innerHTML = "Uploading...";
+
+  try {
+    const res = await fetch(`${getApiUrl()}/upload-retrain-data?category=${encodeURIComponent(category)}`, {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+    resultBox.innerHTML = data.message || JSON.stringify(data);
+  } catch (e) {
+    resultBox.innerHTML = "Upload failed — check the API URL and try again.";
+  }
+}
+
+async function triggerRetrain() {
+  const resultBox = document.getElementById("retrainResult");
+  resultBox.style.display = "block";
+  resultBox.innerHTML = "Retraining in progress... this may take a few minutes.";
+
+  try {
+    const res = await fetch(`${getApiUrl()}/retrain`, { method: "POST" });
+    const data = await res.json();
+    if (data.detail) {
+      resultBox.innerHTML = `Error: ${data.detail}`;
+    } else {
+      resultBox.innerHTML = `
+        ${data.message}<br>
+        Epochs run: ${data.epochs_run}<br>
+        Final train accuracy: ${(data.final_train_accuracy * 100).toFixed(1)}%<br>
+        Final val accuracy: ${typeof data.final_val_accuracy === "number" ? (data.final_val_accuracy * 100).toFixed(1) + "%" : data.final_val_accuracy}
+      `;
+    }
+  } catch (e) {
+    resultBox.innerHTML = "Retraining failed — check the API URL and try again.";
+  }
+}
+</script>
+</body>
+</html>
