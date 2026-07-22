@@ -1,0 +1,5 @@
+Method,Name,Error,Occurrences,First Seen,Last Seen
+GET,/health,HTTPError('504 Server Error: Gateway Time-out for url: /health'),11,2026-07-22T22:08:52Z,2026-07-22T22:09:55Z
+POST,/predict,HTTPError('413 Client Error: Request Entity Too Large for url: /predict'),8,2026-07-22T22:07:50Z,2026-07-22T22:09:57Z
+POST,/predict,HTTPError('502 Server Error: Bad Gateway for url: /predict'),6,2026-07-22T22:08:36Z,2026-07-22T22:09:48Z
+POST,/predict,HTTPError('504 Server Error: Gateway Time-out for url: /predict'),14,2026-07-22T22:08:52Z,2026-07-22T22:09:55Z
