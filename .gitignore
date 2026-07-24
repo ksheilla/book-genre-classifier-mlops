@@ -3,7 +3,3 @@ __pycache__/
 .ipynb_checkpoints/
 .env
 venv/
-data/train/*
-data/test/*
-!data/train/.gitkeep
-!data/test/.gitkeep
