@@ -15,7 +15,7 @@ This project is built with an eye toward a broader mission: helping power genre/
 - **API (Swagger docs):** https://book-genre-classifier-api.onrender.com/docs
 - **Health check:** https://book-genre-classifier-api.onrender.com/health
 
-> **Note:** This is hosted on Render's free tier, which spins down after 15 minutes of inactivity. The first request after idle time may take 30–50 seconds to respond while the service wakes up — this is expected behavior, not a bug.
+> **Note:** This is hosted on Render's free tier, which spins down after 15 minutes of inactivity. The first request after idle time may take 30–50 seconds to respond while the service wakes up this is expected behavior, not a bug.
 
 ---
 
