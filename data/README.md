@@ -1,7 +1,5 @@
 # Data Directory
 
-This folder is intentionally empty in the repository to keep it lightweight.
-
 The actual training/test images (650 train, 100 test, across 5 genre categories)
 are downloaded programmatically from the BookCover30 dataset's listing CSVs.
 
