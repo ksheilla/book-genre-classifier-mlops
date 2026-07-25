@@ -8,7 +8,7 @@ This project is built with an eye toward a broader mission: helping power genre/
 
 ##  Video Demo
 
-**[Watch the demo on YouTube →](https://youtu.be/RaShokrXs-E)**
+**[Watch the demo on YouTube →](https://youtu.be/x5Xa5U2qB18)**
 
 ##  Live Deployment
 
