@@ -12,6 +12,7 @@ This project is built with an eye toward a broader mission: helping power genre/
 
 ##  Live Deployment
 
+- **Live UI Dashboard:** https://book-genre-classifier-ui.onrender.com
 - **API (Swagger docs):** https://book-genre-classifier-api.onrender.com/docs
 - **Health check:** https://book-genre-classifier-api.onrender.com/health
 
