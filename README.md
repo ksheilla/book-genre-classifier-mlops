@@ -174,10 +174,10 @@ Tested with **20 concurrent simulated users** hitting `/predict` and `/health`, 
 | 3 | 14,000 | 36,000 | **2%** | 1.2 |
 
 **Key findings:**
-- A single container cannot reliably handle 20 concurrent users running TensorFlow inference — over half of requests failed with timeouts (504) or gateway errors (502).
+- A single container cannot reliably handle 20 concurrent users running TensorFlow inference over half of requests failed with timeouts (504) or gateway errors (502).
 - Scaling from 1→2 containers roughly **halved median response time** and meaningfully reduced failures.
-- Scaling from 2→3 containers had a smaller effect on median latency, but had a large impact on **tail latency (95th percentile) and reliability** — failure rate dropped from 32% to just 2%, and throughput continued climbing.
-- **Takeaway:** horizontal scaling primarily improves reliability and tail latency under load, rather than uniformly speeding up every request — an important nuance for capacity planning in a real deployment.
+- Scaling from 2→3 containers had a smaller effect on median latency, but had a large impact on **tail latency (95th percentile) and reliability** failure rate dropped from 32% to just 2%, and throughput continued climbing.
+- **Takeaway:** horizontal scaling primarily improves reliability and tail latency under load, rather than uniformly speeding up every request an important nuance for capacity planning in a real deployment.
 
 Full Locust reports (HTML + CSV) for each configuration are available in `locust_results/`.
 
@@ -185,16 +185,16 @@ Full Locust reports (HTML + CSV) for each configuration are available in `locust
 
 ##  Known Limitation: Retraining on Render Free Tier
 
-The `/retrain` endpoint is fully implemented and works correctly — verified locally via Docker (see video demo).
+The `/retrain` endpoint is fully implemented and works correctly verified locally via Docker (see video demo).
 
-However, retraining (loading MobileNetV2 + running training epochs) requires more memory than Render's free tier provides (512MB RAM limit). Attempting to trigger retraining on the **live Render deployment** results in an out-of-memory crash — this is a hosting-tier constraint, not an application bug.
+However, retraining (loading MobileNetV2 + running training epochs) requires more memory than Render's free tier provides (512MB RAM limit). Attempting to trigger retraining on the **live Render deployment** results in an out-of-memory crash this is a hosting-tier constraint, not an application bug.
 
 In a production setting, this would be addressed by:
 - Running retraining as a separate, higher-memory background job rather than inline in the same process as the prediction API
 - Upgrading to a paid Render tier with more RAM
 - Using a managed cloud training service triggered by the API
 
-**Prediction, health-check, and data-upload endpoints all work correctly on the live Render deployment.** Only the training step itself is memory-constrained on the free tier — this is demonstrated working locally instead.
+**Prediction, health-check, and data-upload endpoints all work correctly on the live Render deployment.** Only the training step itself is memory-constrained on the free tier this is demonstrated working locally instead.
 
 ---
 
