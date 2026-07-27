@@ -1,6 +1,6 @@
 # book-genre-classifier-mlops
 
-An end-to-end machine learning pipeline that classifies book covers into genre categories, built as part of an ML Engineering summative assignment. This project demonstrates the full ML lifecycle: data acquisition, model training, evaluation, deployment, monitoring, and retraining — all wrapped in a cloud-hosted API with a live dashboard.
+An end-to-end machine learning pipeline that classifies book covers into genre categories, built as part of an ML Engineering summative assignment. This project demonstrates the full ML lifecycle: data acquisition, model training, evaluation, deployment, monitoring, and retraining all wrapped in a cloud-hosted API with a live dashboard.
 
 This project is built with an eye toward a broader mission: helping power genre/age-appropriate book recommendations for a reading-engagement platform for young readers in Africa.
 
@@ -15,6 +15,7 @@ This project is built with an eye toward a broader mission: helping power genre/
 - **Live UI Dashboard:** https://book-genre-classifier-ui.onrender.com
 - **API (Swagger docs):** https://book-genre-classifier-api.onrender.com/docs
 - **Health check:** https://book-genre-classifier-api.onrender.com/health
+- **Local Host Instance:** http://127.0.0.1:8000  (This is used for the retraining process since retraining is memory intensive and render free tier only provides 512 MB of RAM it is mentioned in the demo video above)
 
 > **Note:** This is hosted on Render's free tier, which spins down after 15 minutes of inactivity. The first request after idle time may take 30–50 seconds to respond while the service wakes up this is expected behavior, not a bug.
 
